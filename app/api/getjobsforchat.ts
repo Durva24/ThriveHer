@@ -63,7 +63,7 @@ interface CleanJobData {
 
 // Base API configuration with hardcoded API key for demo app
 const API_BASE_URL = 'https://jsearch.p.rapidapi.com';
-const API_KEY = '3fe4222f05mshee7786231fb68c8p1cae9bjsnaeb6f8469718';
+const API_KEY = '06e7be61eamshbe456f20da6724ep1da971jsn23a826117a94';
 const API_HOST = 'jsearch.p.rapidapi.com';
 
 const getRequestOptions = (): RequestInit => {
