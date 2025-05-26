@@ -3,7 +3,7 @@ import Groq from 'groq-sdk';
 
 // Initialize Groq client with hardcoded API key
 const groq = new Groq({
-  apiKey: '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', // Replace with your actual Groq API key
+  apiKey: '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', // Replace with your actual Groq API key
   dangerouslyAllowBrowser: true // Only for client-side usage
 });
 
@@ -200,7 +200,7 @@ interface GroqEnhancementResponse {
 
 export class ProfileAPI {
   // Hardcoded configuration
-  private static readonly GROQ_API_KEY = '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'; // Replace with your actual Groq API key
+  private static readonly GROQ_API_KEY = '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'; // Replace with your actual Groq API key
   private static readonly SUPABASE_URL = 'https://ibwjjwzomoyhkxugmmmw.supabase.co'; // Replace with your Supabase URL
   private static readonly SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlid2pqd3pvbW95aGt4dWdtbW13Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4NzkwODgsImV4cCI6MjA2MDQ1NTA4OH0.RmnNBQh_1KJo0TgCjs72aBoxWoOsd_vWjNeIHRfVXac'; // Replace with your Supabase anon key
 

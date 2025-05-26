@@ -1,7 +1,7 @@
 // voiceTranscriptionAPI.ts - Optimized for Indian Languages + English
 
 // Hardcoded API key (replace with your actual Groq API key)
-const GROQ_API_KEY = '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';
+const GROQ_API_KEY = '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';
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/audio/transcriptions';
 
 export interface TranscriptionResult {
