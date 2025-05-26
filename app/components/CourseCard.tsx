@@ -64,7 +64,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ message }) => {
     }
   };
 
-  // Get platform icon based on platform name
+  // Get platform icon based on platform name (updated with all API platforms)
   const getPlatformIcon = (platform: string): string => {
     const platformLower = platform.toLowerCase();
     
@@ -75,30 +75,26 @@ const CourseCard: React.FC<CourseCardProps> = ({ message }) => {
         return 'play-circle-filled';
       case 'edx':
         return 'menu-book';
-      case 'youtube':
-        return 'play-circle-filled';
+      case 'khan academy':
+        return 'lightbulb';
       case 'linkedin learning':
         return 'business';
       case 'pluralsight':
         return 'computer';
-      case 'udacity':
-        return 'science';
       case 'codecademy':
         return 'code';
-      case 'khan academy':
-        return 'lightbulb';
       case 'freecodecamp':
         return 'code';
+      case 'youtube':
+        return 'play-circle-filled';
       case 'skillshare':
         return 'palette';
-      case 'masterclass':
-        return 'star';
       default:
         return 'book';
     }
   };
 
-  // Get platform color based on platform name
+  // Get platform color based on platform name (updated with all API platforms)
   const getPlatformColor = (platform: string): string => {
     const platformLower = platform.toLowerCase();
     
@@ -109,24 +105,20 @@ const CourseCard: React.FC<CourseCardProps> = ({ message }) => {
         return '#A435F0';
       case 'edx':
         return '#02262B';
-      case 'youtube':
-        return '#FF0000';
+      case 'khan academy':
+        return '#14BF96';
       case 'linkedin learning':
         return '#0A66C2';
       case 'pluralsight':
         return '#F15B2A';
-      case 'udacity':
-        return '#01B3E3';
       case 'codecademy':
         return '#1F4056';
-      case 'khan academy':
-        return '#14BF96';
       case 'freecodecamp':
         return '#006400';
+      case 'youtube':
+        return '#FF0000';
       case 'skillshare':
         return '#00FF88';
-      case 'masterclass':
-        return '#000000';
       default:
         return '#49654E';
     }
@@ -141,7 +133,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ message }) => {
       return 'Beginner';
     } else if (nameLower.includes('advanced') || nameLower.includes('master')) {
       return 'Advanced';
-    } else if (platformLower === 'youtube') {
+    } else if (platformLower === 'youtube' || platformLower === 'freecodecamp' || platformLower === 'khan academy') {
       return 'Free';
     } else if (platformLower === 'coursera' || platformLower === 'edx') {
       return 'Academic';

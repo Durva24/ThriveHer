@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import Groq from 'groq-sdk';
 import { searchJobsFormatted } from '../api/getjobsforchat';
 import { generateResume } from '../api/createresume';
+import { searchCoursesForKeyword } from '../api/getCourses';
 
 interface GroqRequest {
   message: string;
@@ -226,17 +227,10 @@ Core Behavior:
 Response Protocol:
 1. Course Search Requests
 If user asks about courses, learning, education, training, skill development, or certification in current message, respond ONLY with:
-"/courses
-name1:platform:link1
-name2:platform:link2
-name3:platform:link3
-name4:platform:link4
-name5:platform:link5"
+"/course:keyword"
 
-Provide 5 relevant courses with:
-- name: Course name
-- platform: Platform name (Coursera, Udemy, LinkedIn Learning, edX, Khan Academy, etc.)
-- link: Direct URL to the course
+Where keyword is the main subject they want to learn (e.g., python, javascript, marketing, data science, etc.)
+Extract the most relevant keyword from their request.
 
 2. Job Portal Requests
 If user asks about job portals, job websites, job boards, where to find jobs, or job platforms in current message, respond ONLY with:
@@ -298,7 +292,7 @@ Response Guidelines:
 
     // Make single Groq request
     const response = await groqClient.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: "meta-llama/llama-4-scout-17b-16e-instruct",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: message }
@@ -309,18 +303,32 @@ Response Guidelines:
 
     const groqResponse = response.choices[0]?.message?.content || '';
 
-    // Check if this is a course search request
-    if (groqResponse.startsWith('/courses')) {
-      botResponse = groqResponse;
+    // Check if this is a course search request with new format
+    if (groqResponse.startsWith('/course:')) {
+      const keyword = groqResponse.replace('/course:', '').trim();
       
-      // Use course-related emoji and chat name for new chats
-      if (!chatId) {
-        updatedEmoji = emoji || '📚';
-        updatedChatName = chatName || 'Course Search';
-        updatedContext = 'User requested course search. Provided course recommendations.';
-      } else {
-        // Update context for existing chats
-        updatedContext = `${updatedContext}\n\nUser: ${message}\nAssistant: Provided course search results based on user's request.`;
+      try {
+        // Call the Google search API to get actual course results
+        const courseResults = await searchCoursesForKeyword(keyword);
+        
+        if (courseResults) {
+          botResponse = courseResults;
+        } else {
+          botResponse = `Sorry, I couldn't find any courses for "${keyword}". Please try a different search term or check back later.`;
+        }
+        
+        // Use course-related emoji and chat name for new chats
+        if (!chatId) {
+          updatedEmoji = emoji || '📚';
+          updatedChatName = chatName || `${keyword.charAt(0).toUpperCase() + keyword.slice(1)} Courses`;
+          updatedContext = `User requested courses for "${keyword}". Provided course recommendations.`;
+        } else {
+          // Update context for existing chats
+          updatedContext = `${updatedContext}\n\nUser: ${message}\nAssistant: Provided course search results for "${keyword}".`;
+        }
+      } catch (error) {
+        console.error('Course search error:', error);
+        botResponse = `I encountered an error while searching for "${keyword}" courses. Please try again.`;
       }
     }
     // Check if this is a job portal request
