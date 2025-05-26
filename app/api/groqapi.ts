@@ -5,7 +5,7 @@ import Groq from 'groq-sdk';
 import { searchJobsFormatted } from '../api/getjobsforchat';
 import { generateResume } from '../api/createresume';
 import { searchCoursesForKeyword } from '../api/getCourses';
-import { searchCommunitiesForKeyword } from '../api/getCommunities'; // Import the new community search API
+import { searchCommunitiesForKeyword } from '../api/getCommunities';  
 
 interface GroqRequest {
   message: string;
@@ -209,80 +209,80 @@ export const processWithGroq = async (request: GroqRequest): Promise<GroqRespons
     }
     
     // Construct the enhanced system prompt with context
-    const systemPrompt = `You are Asha, a supportive female assistant focused on jobs, careers, and mental health for women. Stay strictly on these topics and maintain professional boundaries.
+    const systemPrompt = `You are Asha, a supportive female assistant focused on jobs, careers, and mental health for women. You must analyze user messages carefully and respond according to specific patterns.
 
-${chatId ? `CONVERSATION CONTEXT:
-Previous conversation summary: ${updatedContext}
+${chatId ? `PREVIOUS CONVERSATION CONTEXT:
+${updatedContext}
 
 Continue this conversation naturally, referring to previous topics when relevant.` : 'This is the start of a new conversation.'}
 
-Core Behavior:
-- Use '\n' properly for newlines keep it seperated from text
-- Respond warmly and conversationally in the same language as the user
-- IF you are creating JSON Output don't generate any extra text follow the template strictly
-- Stay focused on career guidance, job searching, resume building, community finding, course recommendations, job portals, and mental health support
-- Do not entertain inappropriate behavior or off-topic requests
-- Do not filter out emojis from responses
-- Reference previous conversation when relevant and helpful
+CRITICAL: You must analyze the user's message and detect their intent FIRST. Then respond with the EXACT format specified below.
 
-Response Protocol:
-1. Course Search Requests
-If user asks about courses, learning, education, training, skill development, or certification in current message, respond ONLY with:
-"/course:keyword"
+INTENT DETECTION RULES:
+Analyze the user message for these keywords and phrases:
 
-Where keyword is the main subject they want to learn (e.g., python, javascript, marketing, data science, etc.)
-Extract the most relevant keyword from their request.
+1. JOB SEARCH INTENT - If user mentions:
+   - Looking for jobs, job search, find jobs, employment opportunities
+   - Specific job titles like "software engineer jobs", "marketing jobs"
+   - "hire me", "job openings", "job vacancies"
+   - "apply for jobs", "job applications"
+   Response: "JOB_SEARCH: [job_title] [location]" (use "India" if no location mentioned)
 
-2. Job Portal Requests
-If user asks about job portals, job websites, job boards, where to find jobs, or job platforms in current message, respond ONLY with:
-"/jobportals"
+2. COURSE SEARCH INTENT - If user mentions:
+   - Want to learn, courses, training, education, skills
+   - "learn programming", "python course", "marketing training"
+   - Certification, online classes, tutorials, study
+   - "upskill", "reskill", "course recommendations"
+   Response: "/course:keyword" (extract main subject they want to learn)
 
-3. Community Search Requests
-If user asks about finding communities, groups, support networks, Discord servers, Reddit communities, Facebook groups, LinkedIn groups, Telegram channels, or mentions wanting to connect with others related to a specific topic/technology/interest in current message, respond ONLY with:
-"/community:keyword"
+3. COMMUNITY SEARCH INTENT - If user mentions:
+   - Find communities, groups, discord, reddit, telegram
+   - "connect with people", "networking", "join groups"
+   - "community for developers", "groups for women"
+   - Social networks, forums, meetups
+   Response: "/community:keyword" (extract main topic/interest)
 
-Where keyword is the main topic/technology/interest they want to find communities for (e.g., react, javascript, python, design, startup, women in tech, data science, etc.)
-Extract the most relevant keyword from their community search request.
+4. JOB PORTALS INTENT - If user mentions:
+   - Job websites, job boards, job portals, job sites
+   - "where to find jobs", "job platforms", "recruitment sites"
+   - Naukri, LinkedIn Jobs, Indeed, job apps
+   Response: "/jobportals"
 
-4. Resume/CV Requests
-If user asks about resume generation in current message, CV creation, or resume building, respond ONLY with:
-"GENERATEPDF"
+5. RESUME INTENT - If user mentions:
+   - Resume, CV, curriculum vitae, resume building
+   - "create resume", "resume help", "build CV"
+   - Portfolio creation, resume templates
+   Response: "GENERATEPDF"
 
-5. Job Search Requests
-If user is searching jobs, employment opportunities, or mentions a job title they want in current message or asking for job suggestions respond ONLY with:
-"JOB_SEARCH: [job_title] [location]"
-Use "India" if no location specified.
+6. CASUAL/INFORMATIVE CONVERSATION - If NONE of the above intents match:
+   Determine if message is:
+   - CASUAL: Greetings, small talk, personal questions, emotions
+   - INFORMATIVE: Career advice, technical questions, detailed explanations
 
-6. All Other Messages
-Provide detailed JSON output only nothing else no extra text. 
-Answer it Considering Previous Message Context and conversation flow.
-IF its a casual message give a casual response in plain text. If its casual give natural short response and use emojis if required.
-For Informative message make it pointwise in very long detail and use markdown and give proper links.
+For CASUAL messages: Respond naturally like a human friend, keep it conversational and short. Use emojis.
 
-For both Informative and general chat follow this below structure strictly and no extra text:
+For INFORMATIVE messages: Provide detailed, well-structured information with markdown formatting, bullet points, and comprehensive explanations.
 
-IMPORTANT: When creating JSON, ensure all string values are properly escaped:
-- Replace all newlines with \\n
-- Replace all quotes with \\"  
-- Replace all backslashes with \\\\
-- Keep markdown formatting but escape it properly
-- DO NOT filter out emojis - preserve all emojis in responses
-
+For both CASUAL and INFORMATIVE, use this JSON format:
 {
-  "response": "Natural, supportive response in user's language with emojis preserved or For informative query reply in markdown very long in very detail and pointwise. Reference previous conversation when relevant.",
-  "context": "Comprehensive conversation context including this exchange for future reference", 
-  "chatName": "Suggested conversation title based on the overall conversation",
-  "emoji": "Single relevant aesthetic emoji"
+  "response": "Your response here (casual and short OR detailed with markdown)",
+  "context": "Summary of conversation including this exchange",
+  "chatName": "Suitable conversation title",
+  "emoji": "Single relevant emoji"
 }
 
-Response Guidelines:
-- Use proper grammar and local expressions when appropriate
-- Be genuinely engaging and emotionally supportive
-- Keep responses focused on career development, mental wellness, community building, courses, and job searching
-- Redirect off-topic conversations back to core subjects
-- Maintain professional boundaries while being warm and approachable
-- Preserve all emojis in responses and conversations
-- Build upon previous conversation points when relevant`;
+IMPORTANT JSON FORMATTING RULES:
+- Escape all newlines as \\n
+- Escape all quotes as \\"
+- Keep all emojis intact
+- Don't add any extra text outside the JSON or specified response formats
+
+RESPONSE GUIDELINES:
+- Stay focused on careers, jobs, mental health, and women's professional development
+- Be warm, supportive, and encouraging
+- Reference previous conversation when relevant
+- Maintain professional boundaries
+- Use the user's language naturally`;
 
     // Make single Groq request
     const response = await groqClient.chat.completions.create({
@@ -291,7 +291,7 @@ Response Guidelines:
         { role: "system", content: systemPrompt },
         { role: "user", content: message }
       ],
-      temperature: 0.9,
+      temperature: 0.7,
       max_tokens: 5000
     });
 
@@ -390,38 +390,105 @@ Response Guidelines:
         botResponse = "I encountered an error while generating your resume. Please try again.";
       }
     }
-    // Check if this is a job search request
+    // Check if this is a job search request - UPDATED LOGIC
     else if (groqResponse.startsWith('JOB_SEARCH:')) {
       const jobSearchPart = groqResponse.replace('JOB_SEARCH:', '').trim();
-      const parts = jobSearchPart.split(' ');
       
-      if (parts.length >= 2) {
-        // Extract job title (all parts except the last one) and location (last part)
-        const location = parts[parts.length - 1];
-        const jobTitle = parts.slice(0, -1).join(' ');
-        
+      // Parse the job search parameters more robustly
+      let jobTitle = '';
+      let location = 'India'; // Default location
+      
+      // Handle different formats: "JOB_SEARCH: developer" or "JOB_SEARCH: developer bangalore"
+      if (jobSearchPart.includes(' in ')) {
+        const parts = jobSearchPart.split(' in ');
+        jobTitle = parts[0].trim();
+        location = parts[1].trim();
+      } else {
+        const parts = jobSearchPart.split(' ');
+        if (parts.length > 1) {
+          // Last word might be location, check if it's a common location
+          const lastWord = parts[parts.length - 1].toLowerCase();
+          const commonLocations = ['india', 'bangalore', 'mumbai', 'delhi', 'pune', 'hyderabad', 'chennai', 'kolkata', 'gurgaon', 'noida', 'anywhere'];
+          
+          if (commonLocations.includes(lastWord)) {
+            location = parts[parts.length - 1];
+            jobTitle = parts.slice(0, -1).join(' ');
+          } else {
+            jobTitle = jobSearchPart;
+          }
+        } else {
+          jobTitle = jobSearchPart;
+        }
+      }
+      
+      if (jobTitle.trim()) {
         try {
-          // Call the job search API which will return formatted response
-          botResponse = await searchJobsFormatted(
-            jobTitle, 
-            location === 'anywhere' ? undefined : location
+          console.log(`Searching for jobs: "${jobTitle}" in "${location}"`);
+          
+          // Call the job search API with proper error handling
+          const jobSearchResults = await searchJobsFormatted(
+            jobTitle.trim(), 
+            location.toLowerCase() === 'anywhere' ? undefined : location.trim(),
+            1, // page
+            1, // numPages  
+            'in', // country code for India
+            'all' // datePosted
           );
+          
+          if (jobSearchResults && jobSearchResults.length > 0) {
+            botResponse = jobSearchResults;
+          } else {
+            botResponse = `I couldn't find any jobs for "${jobTitle}"${location !== 'India' ? ` in ${location}` : ''}. Try searching with different keywords or check back later for new opportunities.`;
+          }
           
           // Use job-related emoji and chat name for new chats
           if (!chatId) {
             updatedEmoji = emoji || '💼';
-            updatedChatName = chatName || `Job Search: ${jobTitle}${location !== 'anywhere' ? ` in ${location}` : ''}`;
-            updatedContext = `User is searching for ${jobTitle} jobs${location !== 'anywhere' ? ` in ${location}` : ''}. Providing job search results.`;
+            updatedChatName = chatName || `${jobTitle} Jobs${location !== 'India' ? ` in ${location}` : ''}`;
+            updatedContext = `User is searching for ${jobTitle} jobs${location !== 'India' ? ` in ${location}` : ''}. Providing job search results.`;
           } else {
             // Update context for existing chats
-            updatedContext = `${updatedContext}\n\nUser: ${message}\nAssistant: Searched for ${jobTitle} jobs${location !== 'anywhere' ? ` in ${location}` : ''} and provided results.`;
+            updatedContext = `${updatedContext}\n\nUser: ${message}\nAssistant: Searched for ${jobTitle} jobs${location !== 'India' ? ` in ${location}` : ''} and provided results.`;
           }
+          
         } catch (error) {
-          console.error('Job search error:', error);
-          botResponse = "I encountered an error while searching for jobs. Please try again with a different search term.";
+          console.error('Job search API error:', error);
+          
+          // Provide more specific error messages based on error type
+          let errorMessage = "I encountered an error while searching for jobs. ";
+          
+          if (error.status === 401) {
+            errorMessage += "There seems to be an authentication issue with the job search service.";
+          } else if (error.status === 429) {
+            errorMessage += "Too many requests. Please wait a moment and try again.";
+          } else if (error.status >= 500) {
+            errorMessage += "The job search service is temporarily unavailable.";
+          } else {
+            errorMessage += "Please try again with different search terms.";
+          }
+          
+          botResponse = errorMessage;
+          
+          // Still update context even on error
+          if (!chatId) {
+            updatedEmoji = emoji || '⚠️';
+            updatedChatName = chatName || 'Job Search Error';
+            updatedContext = `User attempted to search for ${jobTitle} jobs. Error occurred during search.`;
+          } else {
+            updatedContext = `${updatedContext}\n\nUser: ${message}\nAssistant: Error occurred while searching for ${jobTitle} jobs.`;
+          }
         }
       } else {
-        botResponse = "I couldn't understand your job search request. Please specify the job title you're looking for.";
+        botResponse = "I couldn't understand your job search request. Please specify the job title you're looking for. For example: 'Find software engineer jobs' or 'Search for marketing jobs in Mumbai'.";
+        
+        // Update context for unclear request
+        if (!chatId) {
+          updatedEmoji = emoji || '❓';
+          updatedChatName = chatName || 'Job Search Help';
+          updatedContext = 'User made unclear job search request. Provided guidance.';
+        } else {
+          updatedContext = `${updatedContext}\n\nUser: ${message}\nAssistant: Requested clarification for job search.`;
+        }
       }
     } else {
       // Handle normal conversation - parse JSON response with safe parsing
