@@ -5,6 +5,7 @@ import Groq from 'groq-sdk';
 import { searchJobsFormatted } from '../api/getjobsforchat';
 import { generateResume } from '../api/createresume';
 import { searchCoursesForKeyword } from '../api/getCourses';
+import { searchCommunitiesForKeyword } from '../api/getCommunities'; // Import the new community search API
 
 interface GroqRequest {
   message: string;
@@ -237,18 +238,11 @@ If user asks about job portals, job websites, job boards, where to find jobs, or
 "/jobportals"
 
 3. Community Search Requests
-If user asks about finding communities, groups, support networks, or mentions wanting to connect with others in current message, respond ONLY with:
-"/community
-name1:platform:link1
-name2:platform:link2
-name3:platform:link3
-name4:platform:link4
-name5:platform:link5"
+If user asks about finding communities, groups, support networks, Discord servers, Reddit communities, Facebook groups, LinkedIn groups, Telegram channels, or mentions wanting to connect with others related to a specific topic/technology/interest in current message, respond ONLY with:
+"/community:keyword"
 
-Provide 5 relevant communities with:
-- name: Community/group name
-- platform: Platform name (Discord, Reddit, Facebook, LinkedIn, Telegram, etc.)
-- link: Direct URL or invitation link
+Where keyword is the main topic/technology/interest they want to find communities for (e.g., react, javascript, python, design, startup, women in tech, data science, etc.)
+Extract the most relevant keyword from their community search request.
 
 4. Resume/CV Requests
 If user asks about resume generation in current message, CV creation, or resume building, respond ONLY with:
@@ -345,18 +339,32 @@ Response Guidelines:
         updatedContext = `${updatedContext}\n\nUser: ${message}\nAssistant: Provided job portals information.`;
       }
     }
-    // Check if this is a community search request
-    else if (groqResponse.startsWith('/community')) {
-      botResponse = groqResponse;
+    // Check if this is a community search request with new format
+    else if (groqResponse.startsWith('/community:')) {
+      const keyword = groqResponse.replace('/community:', '').trim();
       
-      // Use community-related emoji and chat name for new chats
-      if (!chatId) {
-        updatedEmoji = emoji || '👥';
-        updatedChatName = chatName || 'Community Search';
-        updatedContext = 'User requested community search. Provided community recommendations.';
-      } else {
-        // Update context for existing chats
-        updatedContext = `${updatedContext}\n\nUser: ${message}\nAssistant: Provided community search results.`;
+      try {
+        // Call the community search API to get actual community results
+        const communityResults = await searchCommunitiesForKeyword(keyword);
+        
+        if (communityResults) {
+          botResponse = communityResults;
+        } else {
+          botResponse = `Sorry, I couldn't find any communities for "${keyword}". Please try a different search term or check back later.`;
+        }
+        
+        // Use community-related emoji and chat name for new chats
+        if (!chatId) {
+          updatedEmoji = emoji || '👥';
+          updatedChatName = chatName || `${keyword.charAt(0).toUpperCase() + keyword.slice(1)} Communities`;
+          updatedContext = `User requested communities for "${keyword}". Provided community recommendations.`;
+        } else {
+          // Update context for existing chats
+          updatedContext = `${updatedContext}\n\nUser: ${message}\nAssistant: Provided community search results for "${keyword}".`;
+        }
+      } catch (error) {
+        console.error('Community search error:', error);
+        botResponse = `I encountered an error while searching for "${keyword}" communities. Please try again.`;
       }
     }
     // Check if this is a resume generation request
