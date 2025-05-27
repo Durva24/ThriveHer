@@ -217,6 +217,7 @@ Continue this conversation naturally, referring to previous topics when relevant
 CRITICAL: You must analyze the user's message and detect their intent FIRST. Then respond with the EXACT format specified below.
 
 INTENT DETECTION RULES:
+Dont Generate Extra text and Predict the intent properly
 Analyze the user message for these keywords and phrases:
 
 1. JOB SEARCH INTENT - If user mentions:
@@ -228,6 +229,7 @@ Analyze the user message for these keywords and phrases:
 
 2. COURSE SEARCH INTENT - If user mentions:
    - Want to learn, courses, training, education, skills
+   - If user is asking to search any courses
    - "learn programming", "python course", "marketing training"
    - Certification, online classes, tutorials, study
    - "upskill", "reskill", "course recommendations"

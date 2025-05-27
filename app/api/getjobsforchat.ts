@@ -75,7 +75,7 @@ interface GoogleSearchResponse {
 }
 
 // Google Custom Search API configuration
-const GOOGLE_API_KEY = "AIzaSyAv0eINGFdlMmMdCB-JsgyJ7C1uDHYMNhQ";
+const GOOGLE_API_KEY = "AIzaSyB0gjFwtAbgpNiONdNcxU6HHP0BdYIYw6o";
 const SEARCH_ENGINE_ID = "154208f4c3d874439";
 const GOOGLE_SEARCH_BASE_URL = "https://www.googleapis.com/customsearch/v1";
 

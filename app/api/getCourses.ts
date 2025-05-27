@@ -16,7 +16,7 @@ interface CourseResult {
 
 class GoogleSearchScraper {
   // Hardcoded API credentials - Replace with your actual values
-  private readonly API_KEY = "AIzaSyAv0eINGFdlMmMdCB-JsgyJ7C1uDHYMNhQ";
+  private readonly API_KEY = "AIzaSyB0gjFwtAbgpNiONdNcxU6HHP0BdYIYw6o";
   private readonly SEARCH_ENGINE_ID = "154208f4c3d874439";
   private readonly BASE_URL = "https://www.googleapis.com/customsearch/v1";
   
