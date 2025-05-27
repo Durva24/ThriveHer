@@ -142,7 +142,6 @@ const getConversationContext = async (chatId: string) => {
       .single();
 
     let storedContext = '';
-
     if (!contextError && contextData) {
       storedContext = contextData.context;
     }
@@ -213,7 +212,6 @@ export const processWithGroq = async (request: GroqRequest): Promise<GroqRespons
 
 ${chatId ? `PREVIOUS CONVERSATION CONTEXT:
 ${updatedContext}
-
 Continue this conversation naturally, referring to previous topics when relevant.` : 'This is the start of a new conversation.'}
 
 CRITICAL: You must analyze the user's message and detect their intent FIRST. Then respond with the EXACT format specified below.
@@ -260,7 +258,6 @@ Analyze the user message for these keywords and phrases:
    - INFORMATIVE: Career advice, technical questions, detailed explanations
 
 For CASUAL messages: Respond naturally like a human friend, keep it conversational and short. Use emojis.
-
 For INFORMATIVE messages: Provide detailed, well-structured information with markdown formatting, bullet points, and comprehensive explanations.
 
 For both CASUAL and INFORMATIVE, use this JSON format:
@@ -286,7 +283,7 @@ RESPONSE GUIDELINES:
 
     // Make single Groq request
     const response = await groqClient.chat.completions.create({
-      model: "meta-llama/llama-4-scout-17b-16e-instruct",
+      model: "llama-3.3-70b-versatile",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: message }
@@ -297,101 +294,8 @@ RESPONSE GUIDELINES:
 
     const groqResponse = response.choices[0]?.message?.content || '';
 
-    // Check if this is a course search request with new format
-    if (groqResponse.startsWith('/course:')) {
-      const keyword = groqResponse.replace('/course:', '').trim();
-      
-      try {
-        // Call the Google search API to get actual course results
-        const courseResults = await searchCoursesForKeyword(keyword);
-        
-        if (courseResults) {
-          botResponse = courseResults;
-        } else {
-          botResponse = `Sorry, I couldn't find any courses for "${keyword}". Please try a different search term or check back later.`;
-        }
-        
-        // Use course-related emoji and chat name for new chats
-        if (!chatId) {
-          updatedEmoji = emoji || '📚';
-          updatedChatName = chatName || `${keyword.charAt(0).toUpperCase() + keyword.slice(1)} Courses`;
-          updatedContext = `User requested courses for "${keyword}". Provided course recommendations.`;
-        } else {
-          // Update context for existing chats
-          updatedContext = `${updatedContext}\n\nUser: ${message}\nAssistant: Provided course search results for "${keyword}".`;
-        }
-      } catch (error) {
-        console.error('Course search error:', error);
-        botResponse = `I encountered an error while searching for "${keyword}" courses. Please try again.`;
-      }
-    }
-    // Check if this is a job portal request
-    else if (groqResponse.trim() === '/jobportals') {
-      botResponse = '/jobportals';
-      
-      // Use job portal-related emoji and chat name for new chats
-      if (!chatId) {
-        updatedEmoji = emoji || '🌐';
-        updatedChatName = chatName || 'Job Portals';
-        updatedContext = 'User requested job portals information.';
-      } else {
-        // Update context for existing chats
-        updatedContext = `${updatedContext}\n\nUser: ${message}\nAssistant: Provided job portals information.`;
-      }
-    }
-    // Check if this is a community search request with new format
-    else if (groqResponse.startsWith('/community:')) {
-      const keyword = groqResponse.replace('/community:', '').trim();
-      
-      try {
-        // Call the community search API to get actual community results
-        const communityResults = await searchCommunitiesForKeyword(keyword);
-        
-        if (communityResults) {
-          botResponse = communityResults;
-        } else {
-          botResponse = `Sorry, I couldn't find any communities for "${keyword}". Please try a different search term or check back later.`;
-        }
-        
-        // Use community-related emoji and chat name for new chats
-        if (!chatId) {
-          updatedEmoji = emoji || '👥';
-          updatedChatName = chatName || `${keyword.charAt(0).toUpperCase() + keyword.slice(1)} Communities`;
-          updatedContext = `User requested communities for "${keyword}". Provided community recommendations.`;
-        } else {
-          // Update context for existing chats
-          updatedContext = `${updatedContext}\n\nUser: ${message}\nAssistant: Provided community search results for "${keyword}".`;
-        }
-      } catch (error) {
-        console.error('Community search error:', error);
-        botResponse = `I encountered an error while searching for "${keyword}" communities. Please try again.`;
-      }
-    }
-    // Check if this is a resume generation request
-    else if (groqResponse.trim() === 'GENERATEPDF') {
-      try {
-        // Call the resume generation API
-        const resumeResult = await generateResume();
-        
-        // Return the result as is from the resume generator
-        botResponse = resumeResult;
-        
-        // Use resume-related emoji and chat name for new chats
-        if (!chatId) {
-          updatedEmoji = emoji || '📄';
-          updatedChatName = chatName || 'Resume Generation';
-          updatedContext = 'User requested resume generation. Generated resume successfully.';
-        } else {
-          // Update context for existing chats
-          updatedContext = `${updatedContext}\n\nUser: ${message}\nAssistant: Generated resume for user.`;
-        }
-      } catch (error) {
-        console.error('Resume generation error:', error);
-        botResponse = "I encountered an error while generating your resume. Please try again.";
-      }
-    }
-    // Check if this is a job search request - UPDATED LOGIC
-    else if (groqResponse.startsWith('JOB_SEARCH:')) {
+    // Check if this is a job search request - EXECUTE API CALL DIRECTLY
+    if (groqResponse.startsWith('JOB_SEARCH:')) {
       const jobSearchPart = groqResponse.replace('JOB_SEARCH:', '').trim();
       
       // Parse the job search parameters more robustly
@@ -490,7 +394,101 @@ RESPONSE GUIDELINES:
           updatedContext = `${updatedContext}\n\nUser: ${message}\nAssistant: Requested clarification for job search.`;
         }
       }
-    } else {
+    }
+    // Check if this is a course search request with new format
+    else if (groqResponse.startsWith('/course:')) {
+      const keyword = groqResponse.replace('/course:', '').trim();
+      
+      try {
+        // Call the Google search API to get actual course results
+        const courseResults = await searchCoursesForKeyword(keyword);
+        
+        if (courseResults) {
+          botResponse = courseResults;
+        } else {
+          botResponse = `Sorry, I couldn't find any courses for "${keyword}". Please try a different search term or check back later.`;
+        }
+        
+        // Use course-related emoji and chat name for new chats
+        if (!chatId) {
+          updatedEmoji = emoji || '📚';
+          updatedChatName = chatName || `${keyword.charAt(0).toUpperCase() + keyword.slice(1)} Courses`;
+          updatedContext = `User requested courses for "${keyword}". Provided course recommendations.`;
+        } else {
+          // Update context for existing chats
+          updatedContext = `${updatedContext}\n\nUser: ${message}\nAssistant: Provided course search results for "${keyword}".`;
+        }
+      } catch (error) {
+        console.error('Course search error:', error);
+        botResponse = `I encountered an error while searching for "${keyword}" courses. Please try again.`;
+      }
+    }
+    // Check if this is a job portal request
+    else if (groqResponse.trim() === '/jobportals') {
+      botResponse = '/jobportals';
+      
+      // Use job portal-related emoji and chat name for new chats
+      if (!chatId) {
+        updatedEmoji = emoji || '🌐';
+        updatedChatName = chatName || 'Job Portals';
+        updatedContext = 'User requested job portals information.';
+      } else {
+        // Update context for existing chats
+        updatedContext = `${updatedContext}\n\nUser: ${message}\nAssistant: Provided job portals information.`;
+      }
+    }
+    // Check if this is a community search request with new format
+    else if (groqResponse.startsWith('/community:')) {
+      const keyword = groqResponse.replace('/community:', '').trim();
+      
+      try {
+        // Call the community search API to get actual community results
+        const communityResults = await searchCommunitiesForKeyword(keyword);
+        
+        if (communityResults) {
+          botResponse = communityResults;
+        } else {
+          botResponse = `Sorry, I couldn't find any communities for "${keyword}". Please try a different search term or check back later.`;
+        }
+        
+        // Use community-related emoji and chat name for new chats
+        if (!chatId) {
+          updatedEmoji = emoji || '👥';
+          updatedChatName = chatName || `${keyword.charAt(0).toUpperCase() + keyword.slice(1)} Communities`;
+          updatedContext = `User requested communities for "${keyword}". Provided community recommendations.`;
+        } else {
+          // Update context for existing chats
+          updatedContext = `${updatedContext}\n\nUser: ${message}\nAssistant: Provided community search results for "${keyword}".`;
+        }
+      } catch (error) {
+        console.error('Community search error:', error);
+        botResponse = `I encountered an error while searching for "${keyword}" communities. Please try again.`;
+      }
+    }
+    // Check if this is a resume generation request
+    else if (groqResponse.trim() === 'GENERATEPDF') {
+      try {
+        // Call the resume generation API
+        const resumeResult = await generateResume();
+        
+        // Return the result as is from the resume generator
+        botResponse = resumeResult;
+        
+        // Use resume-related emoji and chat name for new chats
+        if (!chatId) {
+          updatedEmoji = emoji || '📄';
+          updatedChatName = chatName || 'Resume Generation';
+          updatedContext = 'User requested resume generation. Generated resume successfully.';
+        } else {
+          // Update context for existing chats
+          updatedContext = `${updatedContext}\n\nUser: ${message}\nAssistant: Generated resume for user.`;
+        }
+      } catch (error) {
+        console.error('Resume generation error:', error);
+        botResponse = "I encountered an error while generating your resume. Please try again.";
+      }
+    }
+    else {
       // Handle normal conversation - parse JSON response with safe parsing
       const parsedResponse = safeJsonParse(groqResponse);
       

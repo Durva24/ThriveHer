@@ -37,6 +37,44 @@ const JobDetailCard: React.FC<JobDetailCardProps> = ({
     }
   };
 
+  // Get favicon URL from apply link
+  const getFaviconFromApplyLink = (applyLink: string): string => {
+    try {
+      const url = new URL(applyLink);
+      return `${url.protocol}//${url.hostname}/favicon.ico`;
+    } catch (error) {
+      console.error('Error extracting favicon from apply link:', error);
+      return 'https://via.placeholder.com/50x50?text=Logo';
+    }
+  };
+
+  // Get favicon URL from employer logo URL
+  const getFaviconFromEmployerLogo = (employerLogo: string): string => {
+    try {
+      const url = new URL(employerLogo);
+      return `${url.protocol}//${url.hostname}/favicon.ico`;
+    } catch (error) {
+      console.error('Error extracting favicon from employer logo:', error);
+      return 'https://via.placeholder.com/50x50?text=Logo';
+    }
+  };
+
+  // Get appropriate favicon URL - prioritize apply link, fallback to employer logo domain
+  const getFaviconUrl = (job: JobData): string => {
+    // First try to get favicon from apply link
+    if (job.job_apply_link) {
+      return getFaviconFromApplyLink(job.job_apply_link);
+    }
+    
+    // Fallback to employer logo domain if apply link is not available
+    if (job.employer_logo) {
+      return getFaviconFromEmployerLogo(job.employer_logo);
+    }
+    
+    // Final fallback
+    return 'https://via.placeholder.com/50x50?text=Logo';
+  };
+
   // Format date to readable format
   const formatDate = (dateString: string): string => {
     try {
@@ -82,9 +120,12 @@ const JobDetailCard: React.FC<JobDetailCardProps> = ({
             {/* Header with logo and basic info */}
             <View style={styles.headerContainer}>
               <Image 
-                source={{ uri: job.employer_logo }} 
+                source={{ uri: getFaviconUrl(job) }} 
                 style={styles.companyLogo}
                 defaultSource={{ uri: 'https://via.placeholder.com/50x50?text=Logo' }}
+                onError={() => {
+                  console.log('Failed to load favicon, using fallback');
+                }}
               />
               <View style={styles.headerTextContainer}>
                 <Text style={styles.jobTitle} numberOfLines={2}>
